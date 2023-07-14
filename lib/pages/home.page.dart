@@ -8,15 +8,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
   String _informationText = '';
 
   void _resetFields() {
+    _weightController.clear();
+    _heightController.clear();
+
     setState(() {
-      _weightController.clear();
-      _heightController.clear();
       _informationText = "Informe seus dados";
+      _formKey = GlobalKey<FormState>();
     });
   }
 
@@ -56,7 +59,8 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: Center(
+        child: Form(
+          key: _formKey,
           child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -66,34 +70,47 @@ class _HomePageState extends State<HomePage> {
                   size: 120,
                   color: Colors.green,
                 ),
-                TextField(
+                TextFormField(
                   controller: _weightController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                      labelText: 'Peso (Kg)',
-                      labelStyle: TextStyle(
-                        color: Colors.green,
-                      ),
-                      border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                        color: Colors.green,
-                      )),
-                      enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                        color: Colors.green,
-                      )),
-                      focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                        color: Colors.grey,
-                      ))),
+                    labelText: 'Peso (Kg)',
+                    labelStyle: TextStyle(
+                      color: Colors.green,
+                    ),
+                    border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                      color: Colors.green,
+                    )),
+                    enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                      color: Colors.green,
+                    )),
+                    focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                      color: Colors.grey,
+                    )),
+                  ),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.green,
                     fontSize: 25,
                   ),
+                  validator: (value) {
+                    const String regex = r'^(\d+|\d{1,3}(,\d{3})*)([.,]\d+)?$';
+                    final match = RegExp(regex).matchAsPrefix(value!);
+
+                    if (value!.isEmpty) {
+                      return "Insira seu peso!";
+                    } else if (match == null) {
+                      return "Insira um valor numérico válido!";
+                    } else {
+                      return null;
+                    }
+                  },
                 ),
                 const SizedBox(height: 20),
-                TextField(
+                TextFormField(
                   controller: _heightController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
@@ -118,10 +135,26 @@ class _HomePageState extends State<HomePage> {
                     color: Colors.green,
                     fontSize: 25,
                   ),
+                  validator: (value) {
+                    const String regex = r'^(\d+|\d{1,3}(,\d{3})*)([.,]\d+)?$';
+                    final match = RegExp(regex).matchAsPrefix(value!);
+
+                    if (value!.isEmpty) {
+                      return "Insira sua altura!";
+                    } else if (match == null) {
+                      return "Insira um valor numérico válido!";
+                    } else {
+                      return null;
+                    }
+                  },
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: _calculate,
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _calculate();
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.all(10.0),
